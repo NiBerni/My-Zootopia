@@ -1,6 +1,7 @@
 """
 
 """
+import inspect
 import os
 from typing import List, Dict, Any, Type, TypeVar
 
@@ -57,6 +58,28 @@ class BaseDataModel:
 		if missing_fields:
 			return False, missing_fields
 		return True, []
+
+	@classmethod
+	def from_dict(cls, data: Dict[str, Any]) -> 'BaseDataModel':
+		"""
+
+		:param data:
+		:return:
+		"""
+		signature = inspect.signature(cls.__init__)
+		init_params = {}
+
+		for name, param in signature.parameters.items():
+			if name == 'self':
+				continue
+			if name in data:
+				init_params[name] = data[name]
+			elif param.default != inspect.Parameter.empty:
+				init_params[name] = None
+			else:
+				pass
+		return cls(**init_params)
+
 
 	def _get_id_value(self) -> None:
 		"""
@@ -132,19 +155,27 @@ class JsonRepository:
 		current_data.append(model_instance.to_dict())
 		self._save_raw_entries(current_data)
 
-	def read_all(self) -> list[T]:
+	def read_all(self, strict: bool = True) -> list[T]:
 		"""
 
 		:return:
 		"""
 		raw_data = self._load_raw_entries()
 		instances = []
-		for item in raw_data:
+		for index, item in enumerate(raw_data):
 			try:
-				instances.append(self.target_class(**item))
-			except TypeError as e:
-				print(f"[-] ToolKit-Log: Error creating instance of {self.target_class.__name__}")
-				raise e
+				new_instance = self.target_class.from_dict(item)
+				instances.append(new_instance)
+			except Exception as e:
+				error_message = (
+					f"Mapping Error for entry #{index + 1} for class '{self.target_class.__name__}'.\n"
+					f"Data: {item} \nReason: {e}"
+				)
+				if strict:
+					print(f"[-] ToolKit-Log: CRITICAL {error_message}")
+					raise TypeError(error_message) from e
+				else:
+					print(f"[-] ToolKit-Log: WARNING {error_message} Skipping this entry.")
 		return instances
 
 	def read_by_id(self, identity: Any) -> T:
