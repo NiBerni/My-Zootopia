@@ -16,4 +16,3 @@ def load_data(file_path):
 
 animals_data = load_data("animals_data.json")
 
-for animal in animals_data:
