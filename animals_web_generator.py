@@ -1,10 +1,13 @@
 """
+A program for handling animals' data, filtering based on user-specified
+attributes, and generating a web page displaying the filtered results.
 
+This module contains a collection of functions to read animal data from a JSON file,
+filter the data based on specific criteria, and generate an HTML page showcasing
+the filtered results. It also provides user interaction to gather filtering preferences.
 """
 from animal_class_handling import AnimalModel as Animal
 from external_classes.file_handling_classes import JsonRepository
-
-
 
 
 def read_html_template(filepath: str) -> str:
@@ -89,6 +92,7 @@ def get_unique_attribute_values(animals: list[Animal], attribute_name: str) -> s
 		if value:
 			unique_values.add(value)
 	return ", ".join(sorted(unique_values))
+
 
 def generate_animal_page(animals: list[Animal], template_path: str, output_path: str) -> None:
 	"""
@@ -183,8 +187,17 @@ def get_user_search_term(available_options: str) -> str:
 		print(f" -You have to enter something to proceed- \n")
 		print(f" -Please choose from:-- \n - {available_options}\n")
 
+
 def main():
-	""""""
+	"""
+	Main entry point for the Animals Web Generator application.
+
+	This method initializes the JSON repository, retrieves animal data, and interacts with
+	the user to filter animals based on their choice. Depending on the user's input, it
+	generates an HTML page with the appropriate subset of animal records.
+
+	:return: None
+	"""
 	animals_raw = JsonRepository(target_class=Animal, filepath="animals_data.json")
 	all_animals = animals_raw.read_all(strict=False)
 
