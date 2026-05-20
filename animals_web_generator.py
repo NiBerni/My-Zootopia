@@ -166,7 +166,14 @@ def main():
 
 	available_options = get_unique_attribute_values(animals_raw.read_all(strict=False), user_filter_attribute)
 	print(f" --Your available options for '{user_filter_attribute}' are:-- \n - {available_options}\n")
-	search_term = input("Enter the search term from the options above: \n").strip()
+
+	while True:
+		search_term = input("Enter the search term from the options above: \n").strip()
+		if search_term:
+			break
+		else:
+			print(f" -You have to enter something to proceed- \n")
+			print(f" -Please choose from:-- \n - {available_options}\n")
 
 	filtered_animals = filter_animals_by_attribute(animals_raw.read_all(strict=False), user_filter_attribute,
 	                                               search_term)
