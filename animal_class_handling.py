@@ -155,10 +155,14 @@ class AnimalModel(BaseDataModel):
 		:rtype: str
 		"""
 		html_lines = [
-			"<li class='card'>",
-			f"<h2>{self.name}</h2>",
+			"<li class='cards__item'>",
+			f" <div class='cards__title'>{self.name}</div>",
+			f" <div class='cards__text'>"
 		]
 		for attribute, value in self._get_availaible_attributes().items():
 			html_lines.append(f"<p><strong>{attribute.capitalize()}:</strong> {value}</p>")
-		html_lines.append("</li>")
+		html_lines.extend([
+			"   </div>",
+			"</li>"
+		])
 		return "\n".join(html_lines)
