@@ -6,7 +6,7 @@ This module contains a collection of functions to read animal data from a JSON f
 filter the data based on specific criteria, and generate an HTML page showcasing
 the filtered results. It also provides user interaction to gather filtering preferences.
 """
-from animal_class_handling import AnimalModel as Animal
+from animal_class import AnimalModel as Animal
 from external_classes.file_handling_classes import JsonRepository
 
 
