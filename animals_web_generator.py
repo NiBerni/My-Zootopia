@@ -159,7 +159,7 @@ def get_user_attribute_choice(allowed_attributes: list[str]) -> str:
 	while True:
 		user_filter_attribute = input("Enter the attribute name [Hit Enter for Default[skin_type]: \n").strip().lower()
 		if not user_filter_attribute:
-			print(f" -Defaulting to '{user_filter_attribute}' attribute.- \n")
+			print(f" -Defaulting to 'skin-type' attribute.- \n")
 			return "skin_type"
 
 		if user_filter_attribute in allowed_attributes:
