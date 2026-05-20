@@ -160,8 +160,8 @@ class AnimalModel(BaseDataModel):
 		"""
 		html_lines = [
 			"<li class='cards__item'>",
-			f" <div class='cards__title'>{self.name}</div>",
-			f" <div class='cards__text'>"
+			f" <div class='card__title'>{self.name}</div>",
+			f" <div class='card__text'>"
 		]
 		for attribute, value in self._get_available_attributes().items():
 			html_lines.append(f"<p><strong>{attribute.capitalize()}:</strong> {value}</p>")

@@ -165,7 +165,7 @@ def get_user_attribute_choice(allowed_attributes: list[str]) -> str:
 		if user_filter_attribute in allowed_attributes:
 			return user_filter_attribute
 
-		print(f" -'{user_filter_attribute}' is not a valid attribute.-- \n")
+		print(f" -'{user_filter_attribute}' is not a valid attribute.- \n")
 		print(f" -Please chose from:-- {'\n - '.join(allowed_attributes)}\n")
 
 
@@ -185,7 +185,7 @@ def get_user_search_term(available_options: str) -> str:
 		if search_term:
 			return search_term
 		print(f" -You have to enter something to proceed- \n")
-		print(f" -Please choose from:-- \n - {available_options}\n")
+		print(f" -Please choose from:- \n - {available_options}\n")
 
 
 def main():
@@ -221,9 +221,9 @@ def main():
 	filtered_animals = filter_animals_by_attribute(all_animals, filter_attribute, search_term)
 
 	if not filtered_animals:
-		print(" -No animals found matching your criteria.-- \n")
+		print(" -No animals found matching your criteria.- \n")
 	else:
-		print(f" -Generating page of animals filtered by {filter_attribute}...- \n")
+		print(f" -Generating page of animals filtered with {filter_attribute}: {search_term}...- \n")
 	generate_animal_page(filtered_animals, "animals_template.html", "animal_page.html")
 
 
