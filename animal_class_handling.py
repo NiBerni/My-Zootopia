@@ -30,53 +30,46 @@ class AnimalModel(BaseDataModel):
 	"""
 	_id_field = "name"
 
-	_display_mapping = {}
+	_display_mapping = {
+		"diet": "Diet: ",
+		"location": "Location: ",
+		"animal_type": "Type: "
+		               ""
+	}
 
 	def __init__(self,
 	             name: str,
-	             diet: str | None,
-	             location: list[str] | None,
-	             animal_type: str | None
+	             **kwargs
 	             ):
 		"""
-		Initializes an instance of the class with the given attributes, representing
-		an animal with a name, dietary preferences, habitats, and type.
+		Initializes an instance of the class with a specified name and additional keyword arguments.
 
-		:param name: The name of the animal.
+		:param name: Name of the instance.
 		:type name: str
-		:param diet: The dietary preference of the animal, or None if unspecified.
-		:type diet: str | None
-		:param location: A list of habitats where the animal is typically found, or
-		    None if unspecified.
-		:type location: list[str] | None
-		:param animal_type: The classification or type of the animal, or None
-		    if unspecified.
-		:type animal_type: str | None
+		:param kwargs: Additional keyword arguments to be passed to the superclass initializer.
 		"""
-		super().__init__()
+
 		self.name = name
-		if diet:
-			self.diet = diet
-		if location:
-			self.location = location
-		if animal_type:
-			self.type = animal_type
+		super().__init__(**kwargs)
+
 
 	@classmethod
 	def from_dict(cls, formated_data: dict) -> AnimalModel:
 		"""
-		Create an instance of the AnimalModel class from a dictionary representation.
+		Creates an instance of the AnimalModel class from a dictionary by extracting and
+		mapping relevant fields.
 
-		This method parses a dictionary to extract relevant information about an animal,
-		such as its name, location, diet, and type, and returns an instance of the class
-		initialized with the extracted values. If certain fields are missing in the input
-		dictionary, default values will be used.
-
-		:param formated_data: A dictionary containing information about an animal. Expected
-		                      keys include 'name' (str), 'locations' (list), and
-		                      'characteristics' (dict). 'characteristics' dictionary may
-		                      further contain 'diet' and 'type' keys.
-		:return: An instance of the AnimalModel class initialized with the extracted data.
+		:param formated_data: A dictionary containing data to construct the AnimalModel object.
+		                      Expected fields include:
+		                      - "name" (optional): A string representing the name of the animal.
+		                                          Defaults to "Unknown" if not provided.
+		                      - "locations" (optional): A list where the first element, if present,
+		                                                represents the primary location of the animal.
+		                      - "characteristics" (optional): A dictionary containing attributes such as:
+		                                                    - "diet": The dietary habit of the animal.
+		                                                    - "type": The type/category of the animal.
+		:type formated_data: dict
+		:return: An instance of the AnimalModel class initialized with the extracted attributes.
 		:rtype: AnimalModel
 		"""
 		name = formated_data.get("name", "Unknown")
@@ -91,15 +84,12 @@ class AnimalModel(BaseDataModel):
 
 	def _get_availaible_attributes(self) -> dict:
 		""""""
+		return {
+			label: getattr(self, attribute)
+			for attribute, label in self._display_mapping.items()
+			if hasattr(self, attribute)
+		}
 
-		attributes = {}
-		if hasattr(self, "diet"):
-			attributes["diet"] = self.diet
-		if hasattr(self, "location"):
-			attributes["location"] = self.location
-		if hasattr(self, "type"):
-			attributes["type"] = self.type
-		return attributes
 
 	def get_info(self) -> str:
 		""""""
