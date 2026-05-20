@@ -27,89 +27,142 @@ class AnimalModel(BaseDataModel):
 	"""
 	_id_field = "name"
 
+	_display_mapping = {
+		"diet": "Diet: ",
+		"location": "Location: ",
+		"animal_type": "Type: "
+		               ""
+	}
+
 	def __init__(self,
 	             name: str,
-	             diet: str | None,
-	             location: list[str] | None,
-	             animal_type: str | None
+	             **kwargs
 	             ):
 		"""
-		Initializes an instance of the class with the given attributes, representing
-		an animal with a name, dietary preferences, habitats, and type.
+		Initializes an instance of the class with a specified name and additional keyword arguments.
 
-		:param name: The name of the animal.
+		:param name: Name of the instance.
 		:type name: str
-		:param diet: The dietary preference of the animal, or None if unspecified.
-		:type diet: str | None
-		:param location: A list of habitats where the animal is typically found, or
-		    None if unspecified.
-		:type location: list[str] | None
-		:param animal_type: The classification or type of the animal, or None
-		    if unspecified.
-		:type animal_type: str | None
+		:param kwargs: Additional keyword arguments to be passed to the superclass initializer.
 		"""
-		super().__init__()
+
 		self.name = name
-		if diet:
-			self.diet = diet
-		if location:
-			self.location = location
-		if animal_type:
-			self.type = animal_type
+		super().__init__(**kwargs)
+
+	@staticmethod
+	def _format_text(text: str) -> str:
+		"""
+		Formats a given text string by capitalizing the first character, if it is non-empty.
+
+		If the provided text is a valid string and contains at least one character, the method
+		returns the string with the first character converted to uppercase, leaving the rest
+		of the string unchanged. If the input is not a valid string or is empty, the method
+		returns the text as-is.
+
+		:param text:
+		    The input text string to be formatted.
+		:type text: str
+		:return:
+		    A new string where the first character is capitalized if the input text is a non-empty
+		    string. Otherwise, the original text is returned.
+		:rtype: str
+		"""
+		if isinstance(text, str) and len(text) > 0:
+			return text[0].upper() + text[1:]
+		return text
 
 	@classmethod
 	def from_dict(cls, formated_data: dict) -> AnimalModel:
 		"""
-		Create an instance of the AnimalModel class from a dictionary representation.
+		Creates an AnimalModel instance from a dictionary input format.
 
-		This method parses a dictionary to extract relevant information about an animal,
-		such as its name, location, diet, and type, and returns an instance of the class
-		initialized with the extracted values. If certain fields are missing in the input
-		dictionary, default values will be used.
+		This class method is responsible for translating a dictionary containing
+		animal-related information into an instance of the AnimalModel class.
+		It parses specific keys to extract attributes such as name, location,
+		diet, and type of the animal, and applies formatting to ensure consistency.
 
-		:param formated_data: A dictionary containing information about an animal. Expected
-		                      keys include 'name' (str), 'locations' (list), and
-		                      'characteristics' (dict). 'characteristics' dictionary may
-		                      further contain 'diet' and 'type' keys.
-		:return: An instance of the AnimalModel class initialized with the extracted data.
+		:param formated_data: The dictionary containing information about an
+		    animal. Expected keys include 'name', 'locations', and
+		    'characteristics'.
+		:type formated_data: dict
+
+		:return: An instance of the AnimalModel class populated with data
+		    extracted and formatted from the input dictionary.
 		:rtype: AnimalModel
 		"""
 		name = formated_data.get("name", "Unknown")
+		name = cls._format_text(name)
 		locations_list = formated_data.get("locations", [])
 		location = None
 		if isinstance(locations_list, list) and len(locations_list) > 0:
-			location = locations_list[0]
+			location = cls._format_text(locations_list[0])
 		characteristics = formated_data.get("characteristics", {})
-		diet = characteristics.get("diet")
-		animal_type = characteristics.get("type")
+		diet = cls._format_text(characteristics.get("diet"))
+		animal_type = cls._format_text(characteristics.get("type"))
 		return cls(name=name, diet=diet, location=location, animal_type=animal_type)
 
-	def get_info(self):
+	def _get_availaible_attributes(self) -> dict:
 		"""
-		Provides a formatted string containing details about the animal.
+		Retrieves a dictionary of attributes based on a display mapping, containing
+		attribute values and corresponding labels. Only attributes existing in the
+		object are considered.
 
-		The information includes the name, diet, locations (if specified), and
-		type of the animal. If no location is specified, a default message is
-		returned indicating this.
+		:return: Dictionary mapping labels to attribute values for attributes available
+		         in the object.
+		:rtype: dict
+		"""
+		return {
+			label: getattr(self, attribute)
+			for attribute, label in self._display_mapping.items()
+			if hasattr(self, attribute)
+		}
 
-		:return: A string containing the formatted details about the animal.
+	def get_info(self) -> str:
+		"""
+		Compiles and returns a string that contains detailed information about the object's public
+		attributes in a readable format. This can include the object's name and other available
+		attributes parsed from a dictionary.
+
+		All accessible public attributes are gathered and formatted as key-value pairs, where
+		each pair is represented as a line in the resulting string. Attributes and values are
+		fetched from a source that the method retrieves internally.
+
+		:return: A string containing formatted information about the object's name and other publicly
+		         available attributes.
 		:rtype: str
 		"""
+		info_lines = [f"Name: {self.name}"]
+		for attribute, value in self._get_availaible_attributes().items():
+			info_lines.append(f"{attribute}: {value}")
+		return "\n".join(info_lines) + "\n"
 
-		info_lines = []
-		info_lines.append(f"Name: {self.name}")
-		if hasattr(self, "diet"):
-			info_lines.append(f"Diet: {self.diet}")
-		if hasattr(self, "location"):
-			info_lines.append(f"Location: {self.location}")
-		if hasattr(self, "type"):
-			info_lines.append(f"Type: {self.type}")
-		formated_info = "\n".join(info_lines) + "\n"
-		return formated_info
+	def to_html_card(self) -> str:
+		"""
+		Converts the current object's data into an HTML card representation.
+
+		This method generates a list item (`<li>`) styled as a card, containing the name
+		of the object as a heading and available attributes with their corresponding
+		values as paragraphs.
+
+		:raise AttributeError: if an invalid attribute is accessed or if an issue occurs
+		    while retrieving object attributes.
+		:return: String containing the HTML representation of the object's data as a
+		    list item styled as a card.
+		:rtype: str
+		"""
+		html_lines = [
+			"<li class='card'>",
+			f"<h2>{self.name}</h2>",
+		]
+		for attribute, value in self._get_availaible_attributes().items():
+			html_lines.append(f"<p><strong>{attribute.capitalize()}:</strong> {value}</p>")
+		html_lines.append("</li>")
+		return "\n".join(html_lines)
+
 
 
 data = JsonRepository(target_class=AnimalModel, filepath="animals_data.json")
 print(data.read_all(strict=False))
 info_list = []
 for animal in data.read_all(strict=False):
-	print(animal.print_info())
+	print(animal.get_info())
