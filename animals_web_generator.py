@@ -208,7 +208,6 @@ def main():
 		"Do you want to filter animals by a specific attribute? (y/n)[Default: n]: ").strip().lower()
 	if user_filter_choice not in ["y", "yes"]:
 		print(" -No filtering will be applied.- \n -Generating page with all animals...- \n")
-		# TODO change output_path to a more specific path if needed, and ensure the template path is correct.
 		generate_animal_page(all_animals, "animals_template.html", "animal_page.html")
 		return
 
