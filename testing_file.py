@@ -1,10 +1,11 @@
 """
 Modul for testing and sorting thoughts
+Usually in my .gitignore, but for learning purposes I want to keep it
 """
 from external_classes.file_handling_classes import BaseDataModel, JsonRepository
 
 
-class AnimalModel(BaseDataModel):
+class Animal(BaseDataModel):
 	"""
 	Represents a model for storing information about animals.
 
@@ -13,21 +14,21 @@ class AnimalModel(BaseDataModel):
 	dictionary and provides methods for printing stored animal details.
 
 	:ivar name: The name of the animal.
-	:type name: str
+	:type name: str | None
 	:ivar diet: The dietary information of the animal (e.g., herbivore, carnivore).
-	:type diet: str
+	:type diet: str | None
 	:ivar location: A list of geographical locations where the animal is found.
-	:type location: list[str]
+	:type location: list[str] | None
 	:ivar type: The type or species classification of the animal.
-	:type type: str
+	:type type: str | None
 	"""
 	_id_field = "name"
 
 	def __init__(self,
 	             name: str,
-	             diet: str,
-	             location: list[str],
-	             animal_type: str
+	             diet: str | None,
+	             location: list[str] | None,
+	             animal_type: str | None
 	             ):
 		"""
 		Initializes an instance of the animal class.
@@ -41,21 +42,24 @@ class AnimalModel(BaseDataModel):
 		:type name: str
 		:param diet: The diet category of the animal, e.g., herbivore, carnivore,
 		    omnivore, etc.
-		:type diet: str
+		:type diet: str | None
 		:param location: A list of geographic locations or habitats where the
 		    animal typically lives.
-		:type location: list[str]
-		:param animal_type: The classification or type designation of the animal.
-		:type animal_type: str
+		:type location: list[str] | None
+		:param animal_type: the classification or type designation of the animal.
+		:type animal_type: str | None
 		"""
 		super().__init__()
 		self.name = name
-		self.diet = diet
-		self.location = location
-		self.type = animal_type
+		if diet:
+			self.diet = diet
+		if location:
+			self.location = location
+		if animal_type:
+			self.type = animal_type
 
 	@classmethod
-	def from_dict(cls, data: dict) -> AnimalModel:
+	def from_dict(cls, formated_data: dict) -> Animal:
 		"""
 		Creates an instance of the class using a dictionary input. Extracts specific
 		data from the provided dictionary to initialize the class instance.
@@ -68,35 +72,44 @@ class AnimalModel(BaseDataModel):
 
 		:return: A class instance initialized with values extracted from the provided
 		    dictionary.
-		:rtype: AnimalModel
+		:rtype: Animal
 		"""
-		name = data.get("name")
-		location = data.get("locations", [])
-		characteristics = data.get("characteristics", {})
-		diet = characteristics.get("diet", "unknown")
-		animal_type = characteristics.get("type", "unknown")
-		return cls(name, diet, location, animal_type)
+		name = formated_data.get("name", "Unknown")
+		locations_list = formated_data.get("locations", [])
+		location = None
+		if isinstance(locations_list, list) and len(locations_list) > 0:
+			location = locations_list[0]
+		characteristics = formated_data.get("characteristics", {})
+		diet = characteristics.get("diet")
+		animal_type = characteristics.get("type")
+		return cls(name=name, diet=diet, location=location, animal_type=animal_type)
 
-
-	def print_info(self):
+	def get_info(self):
 		"""
-		Provides a formatted string containing details about the object.
+		Provides a formatted string containing details about the animal.
 
 		The information includes the name, diet, locations (if specified), and
-		type of the object. If no location is specified, a default message is
+		type of the animal. If no location is specified, a default message is
 		returned indicating this.
 
-		:return: A string containing the formatted details about the object.
+		:return: A string containing the formatted details about the animal.
 		:rtype: str
 		"""
 		# TODO switch to returning a string instead of printing directly in final Version
-		print(f"Name: {self.name} \n"
-		      f"Diet: {self.diet} \n"
-		      f"Location: {', '.join(self.location) if self.location else 'No location specified'} \n"
-		      f"Type: {self.type}\n")
+		info_lines = []
+		info_lines.append(f"Name: {self.name}")
+		if hasattr(self, "diet"):
+			info_lines.append(f"Diet: {self.diet}")
+		if hasattr(self, "location"):
+			info_lines.append(f"Location: {self.location}")
+		if hasattr(self, "type"):
+			info_lines.append(f"Type: {self.type}")
+		formated_info = "\n".join(info_lines) + "\n"
+		return formated_info
 
 
-data = JsonRepository(target_class=AnimalModel, filepath="animals_data.json")
+data = JsonRepository(target_class=Animal, filepath="animals_data.json")
 print(data.read_all(strict=False))
+info_list = []
 for animal in data.read_all(strict=False):
-	animal.print_info()
+	print(animal.print_info())
