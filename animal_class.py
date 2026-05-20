@@ -5,6 +5,8 @@ location, and type.
 This module defines the AnimalModel class, which allows for the creation, manipulation,
 and representation of animal instances with optional attributes.
 """
+from __future__ import annotations
+
 from external_classes.file_handling_classes import BaseDataModel
 
 
