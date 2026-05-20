@@ -1,8 +1,11 @@
 """
-Modul for testing and sorting thoughts
-Usually in my .gitignore, but for learning purposes I want to keep it
+Module for managing animal-related data, including information such as name, diet,
+location, and type.
+
+This module defines the AnimalModel class, which allows for the creation, manipulation,
+and representation of animal instances with optional attributes.
 """
-from external_classes.file_handling_classes import BaseDataModel, JsonRepository
+from external_classes.file_handling_classes import BaseDataModel
 
 
 class AnimalModel(BaseDataModel):
@@ -95,7 +98,7 @@ class AnimalModel(BaseDataModel):
 		:return: A string containing the formatted details about the animal.
 		:rtype: str
 		"""
-
+		# TODO switch to returning a string instead of printing directly in final Version
 		info_lines = []
 		info_lines.append(f"Name: {self.name}")
 		if hasattr(self, "diet"):
@@ -106,10 +109,3 @@ class AnimalModel(BaseDataModel):
 			info_lines.append(f"Type: {self.type}")
 		formated_info = "\n".join(info_lines) + "\n"
 		return formated_info
-
-
-data = JsonRepository(target_class=AnimalModel, filepath="animals_data.json")
-print(data.read_all(strict=False))
-info_list = []
-for animal in data.read_all(strict=False):
-	print(animal.print_info())
