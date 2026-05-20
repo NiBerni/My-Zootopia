@@ -30,6 +30,8 @@ class AnimalModel(BaseDataModel):
 	"""
 	_id_field = "name"
 
+	_display_mapping = {}
+
 	def __init__(self,
 	             name: str,
 	             diet: str | None,
@@ -87,25 +89,32 @@ class AnimalModel(BaseDataModel):
 		animal_type = characteristics.get("type")
 		return cls(name=name, diet=diet, location=location, animal_type=animal_type)
 
-	def get_info(self):
-		"""
-		Provides a formatted string containing details about the animal.
+	def _get_availaible_attributes(self) -> dict:
+		""""""
 
-		The information includes the name, diet, locations (if specified), and
-		type of the animal. If no location is specified, a default message is
-		returned indicating this.
-
-		:return: A string containing the formatted details about the animal.
-		:rtype: str
-		"""
-		# TODO switch to returning a string instead of printing directly in final Version
-		info_lines = []
-		info_lines.append(f"Name: {self.name}")
+		attributes = {}
 		if hasattr(self, "diet"):
-			info_lines.append(f"Diet: {self.diet}")
+			attributes["diet"] = self.diet
 		if hasattr(self, "location"):
-			info_lines.append(f"Location: {self.location}")
+			attributes["location"] = self.location
 		if hasattr(self, "type"):
-			info_lines.append(f"Type: {self.type}")
-		formated_info = "\n".join(info_lines) + "\n"
-		return formated_info
+			attributes["type"] = self.type
+		return attributes
+
+	def get_info(self) -> str:
+		""""""
+		info_lines = [f"Name: {self.name}"]
+		for attribute, value in self._get_availaible_attributes().items():
+			info_lines.append(f"{attribute}: {value}")
+		return "\n".join(info_lines) + "\n"
+
+	def to_html_card(self) -> str:
+		""""""
+		html_lines = [
+			"<li class='card'>",
+			f"<h2>{self.name}</h2>",
+		]
+		for attribute, value in self._get_availaible_attributes().items():
+			html_lines.append(f"<p><strong>{attribute.capitalize()}:</strong> {value}</p>")
+		html_lines.append("</li>")
+		return "\n".join(html_lines)
