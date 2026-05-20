@@ -6,6 +6,8 @@ This module contains a collection of functions to read animal data from a JSON f
 filter the data based on specific criteria, and generate an HTML page showcasing
 the filtered results. It also provides user interaction to gather filtering preferences.
 """
+import os
+
 from animal_class import AnimalModel as Animal
 from external_classes.file_handling_classes import JsonRepository
 
@@ -198,7 +200,11 @@ def main():
 
 	:return: None
 	"""
-	animals_raw = JsonRepository(target_class=Animal, filepath="animals_data.json")
+	script_dir = os.path.dirname(os.path.abspath(__file__))
+	json_file_path = os.path.join(script_dir, "animals_data.json")
+	template_file_path = os.path.join(script_dir, "animals_template.html")
+	output_file_path = os.path.join(script_dir, "animal_page.html")
+	animals_raw = JsonRepository(target_class=Animal, filepath=json_file_path)
 	all_animals = animals_raw.read_all(strict=False)
 
 	print("\n----- Welcome to the Animals Web Generator! -----\n")
@@ -208,7 +214,7 @@ def main():
 		"Do you want to filter animals by a specific attribute? (y/n)[Default: n]: ").strip().lower()
 	if user_filter_choice not in ["y", "yes"]:
 		print(" -No filtering will be applied.- \n -Generating page with all animals...- \n")
-		generate_animal_page(all_animals, "animals_template.html", "animal_page.html")
+		generate_animal_page(all_animals, template_file_path, output_file_path)
 		return
 
 	allowed_attributes = ["diet", "location", "animal_type", "skin_type"]
@@ -224,7 +230,7 @@ def main():
 		print(" -No animals found matching your criteria.- \n")
 	else:
 		print(f" -Generating page of animals filtered with {filter_attribute}: {search_term}...- \n")
-	generate_animal_page(filtered_animals, "animals_template.html", "animal_page.html")
+	generate_animal_page(filtered_animals, template_file_path, output_file_path)
 
 
 if __name__ == "__main__":
