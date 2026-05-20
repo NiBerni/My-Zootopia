@@ -102,7 +102,8 @@ class AnimalModel(BaseDataModel):
 		characteristics = formated_data.get("characteristics", {})
 		diet = cls._format_text(characteristics.get("diet"))
 		animal_type = cls._format_text(characteristics.get("type"))
-		return cls(name=name, diet=diet, location=location, animal_type=animal_type)
+		skin_type = cls._format_text(characteristics.get("skin_type"))
+		return cls(name=name, diet=diet, location=location, animal_type=animal_type, skin_type=skin_type)
 
 	def _get_availaible_attributes(self) -> dict:
 		"""
