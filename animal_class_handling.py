@@ -33,7 +33,8 @@ class AnimalModel(BaseDataModel):
 	_display_mapping = {
 		"diet": "Diet: ",
 		"location": "Location: ",
-		"animal_type": "Type: "
+		"animal_type": "Type: ",
+		"distinctive_feature": "Feature:"
 		               ""
 	}
 
@@ -102,10 +103,12 @@ class AnimalModel(BaseDataModel):
 		characteristics = formated_data.get("characteristics", {})
 		diet = cls._format_text(characteristics.get("diet"))
 		animal_type = cls._format_text(characteristics.get("type"))
+		feature = cls._format_text(characteristics.get("distinctive_feature"))
 		skin_type = cls._format_text(characteristics.get("skin_type"))
-		return cls(name=name, diet=diet, location=location, animal_type=animal_type, skin_type=skin_type)
+		return cls(name=name, diet=diet, location=location, animal_type=animal_type, skin_type=skin_type,
+		           distinctive_feature=feature)
 
-	def _get_availaible_attributes(self) -> dict:
+	def _get_available_attributes(self) -> dict:
 		"""
 		Retrieves a dictionary of attributes based on a display mapping, containing
 		attribute values and corresponding labels. Only attributes existing in the
@@ -137,7 +140,7 @@ class AnimalModel(BaseDataModel):
 		:rtype: str
 		"""
 		info_lines = [f"Name: {self.name}"]
-		for attribute, value in self._get_availaible_attributes().items():
+		for attribute, value in self._get_available_attributes().items():
 			info_lines.append(f"{attribute}: {value}")
 		return "\n".join(info_lines) + "\n"
 
@@ -160,7 +163,7 @@ class AnimalModel(BaseDataModel):
 			f" <div class='cards__title'>{self.name}</div>",
 			f" <div class='cards__text'>"
 		]
-		for attribute, value in self._get_availaible_attributes().items():
+		for attribute, value in self._get_available_attributes().items():
 			html_lines.append(f"<p><strong>{attribute.capitalize()}:</strong> {value}</p>")
 		html_lines.extend([
 			"   </div>",
