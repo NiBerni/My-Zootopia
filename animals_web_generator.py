@@ -135,9 +135,59 @@ def generate_animal_page(animals: list[Animal], template_path: str, output_path:
 	print(f"Animal page generated successfully at '{output_path}'.")
 
 
+def get_user_attribute_choice(allowed_attributes: list[str]) -> str:
+	"""
+	Prompt the user to select an attribute to filter by from a list of allowed attributes.
+
+	A message displays the available attributes, and the user is prompted to input their
+	choice. If no input is provided, a default attribute of 'skin_type' is selected.
+	If the user's input does not match any of the allowed attributes, they are prompted
+	again until a valid choice is made.
+
+	:param allowed_attributes: A list of attributes the user can choose from.
+	:type allowed_attributes: list[str]
+	:return: The attribute chosen by the user or the default ('skin_type') if no input is provided.
+	:rtype: str
+	"""
+	print("\n --Which attribute do you want to filter by?-- \n")
+	print(f" --Your possibilities are:-- \n - {"\n - ".join(allowed_attributes)}\n")
+
+	while True:
+		user_filter_attribute = input("Enter the attribute name [Hit Enter for Default[skin_type]: \n").strip().lower()
+		if not user_filter_attribute:
+			print(f" -Defaulting to '{user_filter_attribute}' attribute.- \n")
+			return "skin_type"
+
+		if user_filter_attribute in allowed_attributes:
+			return user_filter_attribute
+
+		print(f" -'{user_filter_attribute}' is not a valid attribute.-- \n")
+		print(f" -Please chose from:-- {'\n - '.join(allowed_attributes)}\n")
+
+
+def get_user_search_term(available_options: str) -> str:
+	"""
+	Gets and validates a search term from user input.
+
+	Prompts the user to enter a search term and ensures that the input is not empty.
+	The input is stripped of leading and trailing whitespace.
+
+	:param available_options: The valid options that the user can refer to when
+	    providing their search term. This is displayed as part of the prompt.
+	:return: The non-empty search term entered by the user.
+	"""
+	while True:
+		search_term = input("Enter the search term from the options above: \n").strip()
+		if search_term:
+			return search_term
+		print(f" -You have to enter something to proceed- \n")
+		print(f" -Please choose from:-- \n - {available_options}\n")
+
 def main():
 	""""""
 	animals_raw = JsonRepository(target_class=Animal, filepath="animals_data.json")
+	all_animals = animals_raw.read_all(strict=False)
+
 	print("\n----- Welcome to the Animals Web Generator! -----\n")
 
 	print(" --Animals successfully loaded from JSON file.-- \n")
@@ -146,41 +196,22 @@ def main():
 	if user_filter_choice not in ["y", "yes"]:
 		print(" -No filtering will be applied.- \n -Generating page with all animals...- \n")
 		# TODO change output_path to a more specific path if needed, and ensure the template path is correct.
-		generate_animal_page(animals_raw.read_all(strict=False), "animals_template.html", "animal_page.html")
+		generate_animal_page(all_animals, "animals_template.html", "animal_page.html")
 		return
 
 	allowed_attributes = ["diet", "location", "animal_type", "skin_type"]
-	print("\n --Which attribute do you want to filter by?-- \n")
-	print(f" --Your possibilities are:-- \n - {"\n - ".join(allowed_attributes)}\n")
-	while True:
-		user_filter_attribute = input("Enter the attribute name [Hit Enter for Default[skin_type]: \n").strip().lower()
-		if not user_filter_attribute:
-			user_filter_attribute = "skin_type"
-			print(f" -Defaulting to '{user_filter_attribute}' attribute.- \n")
-			break
-		if user_filter_attribute in allowed_attributes:
-			break
-		else:
-			print(f" -'{user_filter_attribute}' is not a valid attribute.-- \n")
-			print(f" -Please chose from:-- {'\n - '.join(allowed_attributes)}\n")
+	filter_attribute = get_user_attribute_choice(allowed_attributes)
 
-	available_options = get_unique_attribute_values(animals_raw.read_all(strict=False), user_filter_attribute)
-	print(f" --Your available options for '{user_filter_attribute}' are:-- \n - {available_options}\n")
+	available_options = get_unique_attribute_values(all_animals, filter_attribute)
+	print(f" --Your available options for '{filter_attribute}' are:-- \n - {available_options}\n")
+	search_term = get_user_search_term(available_options)
 
-	while True:
-		search_term = input("Enter the search term from the options above: \n").strip()
-		if search_term:
-			break
-		else:
-			print(f" -You have to enter something to proceed- \n")
-			print(f" -Please choose from:-- \n - {available_options}\n")
+	filtered_animals = filter_animals_by_attribute(all_animals, filter_attribute, search_term)
 
-	filtered_animals = filter_animals_by_attribute(animals_raw.read_all(strict=False), user_filter_attribute,
-	                                               search_term)
 	if not filtered_animals:
 		print(" -No animals found matching your criteria.-- \n")
 	else:
-		print(f" -Generating page of animals filtered by {user_filter_attribute}...- \n")
+		print(f" -Generating page of animals filtered by {filter_attribute}...- \n")
 	generate_animal_page(filtered_animals, "animals_template.html", "animal_page.html")
 
 
