@@ -1,0 +1,3 @@
+[submodule "external_classes"]
+	path = external_classes
+	url = https://github.com/NiBerni/PrivateToolBox.git
