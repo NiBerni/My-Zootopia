@@ -8,8 +8,10 @@ the filtered results. It also provides user interaction to gather filtering pref
 """
 import os
 
+from dotenv import load_dotenv
+
 from animal_class import AnimalModel as Animal
-from external_classes.file_handling_classes import JsonRepository
+from external_classes.file_handling_classes import ApiRepository
 
 
 def read_html_template(filepath: str) -> str:
@@ -33,8 +35,7 @@ def read_html_template(filepath: str) -> str:
 	except IOError as e:
 		print(f"Error reading file '{filepath}': {e}")
 		return ""
-	finally:
-		file.close()
+
 
 
 def filter_animals_by_attribute(animals: list[Animal], attribute_name: str, search_term: str) -> list[Animal]:
@@ -141,6 +142,24 @@ def generate_animal_page(animals: list[Animal], template_path: str, output_path:
 	print(f"Animal page generated successfully at '{output_path}'.")
 
 
+def get_user_animal_name() -> str:
+	"""
+	Continuously prompts the user to input the name of an animal until a non-empty
+	string is provided. This function ensures that the user supplies valid input
+	that is not blank or whitespace-only before proceeding. The prompt guides the
+	user to specify the animal they wish to search for, enhancing user interaction
+	and data validation.
+
+	:returns: The user-provided name of the animal, guaranteed to be a non-empty
+	          string.
+	:rtype: str
+	"""
+	while True:
+		user_animal_name = input("Enter the name of the animal you want to search for: \n").strip()
+		if user_animal_name:
+			return user_animal_name
+		print(f" -You have to enter something to proceed- \n")
+
 def get_user_attribute_choice(allowed_attributes: list[str]) -> str:
 	"""
 	Prompt the user to select an attribute to filter by from a list of allowed attributes.
@@ -191,25 +210,33 @@ def get_user_search_term(available_options: str) -> str:
 
 
 def main():
-	"""
-	Main entry point for the Animals Web Generator application.
+	load_dotenv()
+	api_key = os.getenv("API_KEY")
+	api_url = os.getenv("API_URL")
 
-	This method initializes the JSON repository, retrieves animal data, and interacts with
-	the user to filter animals based on their choice. Depending on the user's input, it
-	generates an HTML page with the appropriate subset of animal records.
+	if not api_url:
+		print("API_URL is not set in the environment variables.")
+		return
+	elif not api_key:
+		print("API_KEY is not set in the environment variables.")
+		return
+	headers = {"X-API-Key": api_key}
 
-	:return: None
-	"""
 	script_dir = os.path.dirname(os.path.abspath(__file__))
-	json_file_path = os.path.join(script_dir, "animals_data.json")
 	template_file_path = os.path.join(script_dir, "animals_template.html")
 	output_file_path = os.path.join(script_dir, "animal_page.html")
-	animals_raw = JsonRepository(target_class=Animal, filepath=json_file_path)
-	all_animals = animals_raw.read_all(strict=False)
 
-	print("\n----- Welcome to the Animals Web Generator! -----\n")
+	print("\n----- Welcome to the Animals Web Generator (API - Edition)! -----\n")
+	search_animal = get_user_animal_name()
+	print(f" --Fetching data for '{search_animal}' from API...-- \n")
 
-	print(" --Animals successfully loaded from JSON file.-- \n")
+	animal_repo = ApiRepository(target_class=Animal, api_url=api_url, headers=headers)
+	all_animals = animal_repo.read_all(strict=False, params={"name": search_animal})
+	if not all_animals:
+		print(f"No animals found for '{search_animal}' Generating page...")
+		generate_animal_page([], template_file_path, output_file_path)
+		return
+	print(f" -Found {len(all_animals)} animals for '{search_animal}'- \n")
 	user_filter_choice = input(
 		"Do you want to filter animals by a specific attribute? (y/n)[Default: n]: ").strip().lower()
 	if user_filter_choice not in ["y", "yes"]:
